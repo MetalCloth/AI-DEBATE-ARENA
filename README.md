@@ -1,87 +1,53 @@
 🗣️ AI Debate Arena
-AI Debate Arena is an interactive Streamlit web app where two AI agents (Pro & Con) battle it out on any topic you choose. Each round, they argue, a Critic AI scores them, and you control when to end the debate. Powered by LangChain, LangGraph, Claude, and Tavily Search.
+AI Debate Arena is an advanced multi-agent debate system powered by LangGraph, Anthropic Claude 3.5, and Streamlit. It simulates formal Oxford-style debates between AI agents — ProAgent, ConAgent, and a CriticAgent — with stepwise reasoning, memory, and dynamic strategy refinement.
+
+📌 Core Idea: You input a debate topic. The system runs infinite rounds of structured arguments until you hit "End Debate". Every round is judged and critiqued, with arguments updated based on feedback.
 
 🚀 Features
-Custom Topic: Enter any debate topic at the start.
+🔁 Infinite Debate Loop: Pro and Con agents continue debating endlessly until manually stopped.
 
-Unlimited Rounds: Advance rounds with a button—stop whenever you want.
+🧠 ReAct Agents: Both sides use LangChain’s ReAct paradigm with tools (Tavily, direct response).
 
-AI Agents: Pro defends, Con attacks, Critic judges.
+🧑‍⚖️ Critic Agent: Evaluates rounds, gives scores, feedback, and strategy tips.
 
-Live Scores & Feedback: See arguments, scores, and critic feedback after each round.
+🧾 Round Memory: Each round is stored, including score, feedback, and argument history.
 
-Debate Summary: Get a full markdown summary when you end the debate.
+📊 Dynamic Strategy Update: Agents adapt based on feedback to improve future arguments.
 
-No CRUD, No Database: All in-memory, session-based.
+🧵 Live Streamlit UI: Interactive web app to monitor, control, and analyze the debate in real time.
 
-🛠️ Requirements
-Python 3.10+
+📜 Markdown Transcript + Summary: Generates full debate summary in markdown format.
 
-Streamlit
+📸 Demo
 
-LangChain
 
-LangGraph
+UI includes:
 
-langchain-anthropic
+Round-by-round collapsible arguments
 
-langchain-tavily
+On-demand toggles for Pro, Con, Critic
 
-python-dotenv
+Debate summary button
 
-You’ll need API keys for Anthropic Claude and Tavily Search.
+Debug mode for inspecting state
 
-⚡️ Quickstart
-Clone this repo:
+🧠 Agents
+ProAgent: Defends the claim fiercely, uses facts, logic, and bold rhetoric.
 
-bash
-git clone https://github.com/yourusername/ai-debate-arena.git
-cd ai-debate-arena
-Install dependencies:
+ConAgent: Refutes the claim with cold analysis, sarcasm, and intellectual takedowns.
 
-bash
-pip install -r requirements.txt
-Set up your .env file:
+CriticAgent: Scores both arguments, provides tactical feedback, and declares round winner.
 
-text
-ANTHROPIC_API_KEY=sk-...
-TAVILY_API_KEY=tvly_...
-Run the app:
+⚙️ Technologies Used
+🔁 LangGraph
 
-bash
-streamlit run app.py
-🖥️ Usage
-Enter your debate topic and click Start Debate.
+🤖 LangChain
 
-Click Next Debate Round to generate arguments for both sides and see the critic’s feedback.
+🧠 Anthropic Claude 3.5 Haiku
 
-Repeat as many rounds as you like.
+🌐 TavilySearch
 
-Click End the Debate when you’re done.
+🧪 Streamlit
 
-Click 🤖 Summarize Debate to get a full markdown summary.
+🧊 Python 3.10+
 
-🧩 How It Works
-ProAgent: Defends your topic with logic, evidence, and wit.
-
-ConAgent: Attacks the topic with cold logic and sarcasm.
-
-Critic: Judges each round, scores both sides, and suggests strategies.
-
-You: Control the flow, rounds, and when to end.
-
-📝 Example Topics
-"Dictatorship should never exist"
-
-"AI will benefit humanity more than harm it"
-
-"Pineapple belongs on pizza"
-
-"Homework is a waste of time"
-
-🧑‍💻 Dev Notes
-All state is managed in Streamlit session—no database needed.
-
-Agents use LangChain’s ReAct agent with Tavily Search for facts.
-
-You can easily swap Claude for GPT or other LLMs if desired.
