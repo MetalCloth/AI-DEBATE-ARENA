@@ -1,57 +1,109 @@
-🗣️ AI Debate Arena
-AI Debate Arena is an advanced multi-agent debate system powered by LangGraph, Anthropic Claude 3.5, and Streamlit. It simulates formal Oxford-style debates between AI agents — ProAgent, ConAgent, and a CriticAgent — with stepwise reasoning, memory, and dynamic strategy refinement.
+# 🧠 AI Debate Arena
+
+> **LangGraph-powered multi-agent debate system featuring Claude, tools, and real-time Streamlit UI.**
 
 <img width="2076" height="1099" alt="mermaid-diagram-2025-07-14-222150" src="https://github.com/user-attachments/assets/93d4b0da-f697-4a69-87bb-041b8fbdc3b0" />
 
+---
+
+## 🎯 Overview
+
+**AI Debate Arena** is a multi-agent system powered by [LangGraph](https://www.langchain.com/langgraph) that simulates dynamic debates between intelligent agents:
+
+- 🤖 **ProAgent** defends a claim with conviction and tools  
+- 🤖 **ConAgent** refutes it with ruthless logic  
+- 🧑‍⚖️ **CriticAgent** evaluates each round, scores both sides, and offers feedback  
+- 🔁 Infinite looping rounds until the user ends the debate  
+- 📜 On-demand final summary with markdown table and verdict  
+
+Built with **Claude 3.5 Haiku**, **Tavily Search**, **LangChain**, and a clean **Streamlit UI**.
+
+---
+
+## 🚀 Features
+
+✅ LangGraph orchestration with parallel agents  
+✅ Claude-based Pro/Con agents with ReAct-style prompting  
+✅ Integrated tools: direct reasoning + Tavily web search  
+✅ Structured critic scoring via Pydantic  
+✅ Real-time UI with Streamlit and session state  
+✅ Memory across rounds for smarter arguments  
+✅ Final markdown-style summary and verdict generation  
+
+---
 
 
-📌 Core Idea: You input a debate topic. The system runs infinite rounds of structured arguments until you hit "End Debate". Every round is judged and critiqued, with arguments updated based on feedback.
+---
 
-🚀 Features
-🔁 Infinite Debate Loop: Pro and Con agents continue debating endlessly until manually stopped.
+## 🧩 Tech Stack
 
-🧠 ReAct Agents: Both sides use LangChain’s ReAct paradigm with tools (Tavily, direct response).
+| Component        | Technology                     |
+|------------------|--------------------------------|
+| UI               | Streamlit                      |
+| Debate Agents    | Claude 3.5 (via LangChain)     |
+| Tools            | Custom tools + Tavily Search   |
+| Orchestration    | LangGraph                      |
+| Evaluation       | Claude + PydanticOutputParser  |
+| Prompting        | Custom ReAct format            |
 
-🧑‍⚖️ Critic Agent: Evaluates rounds, gives scores, feedback, and strategy tips.
+---
 
-🧾 Round Memory: Each round is stored, including score, feedback, and argument history.
+## 📦 Setup Instructions
 
-📊 Dynamic Strategy Update: Agents adapt based on feedback to improve future arguments.
+### 1. Clone the repository
 
-🧵 Live Streamlit UI: Interactive web app to monitor, control, and analyze the debate in real time.
+```bash
+git clone https://github.com/your-username/ai-debate-arena.git
+cd ai-debate-arena
+```
 
-📜 Markdown Transcript + Summary: Generates full debate summary in markdown format.
+### 2. Install dependencies
 
-📸 Demo
+```bash
+pip install -r requirements.txt
+```
 
+### 3. Set up your environment variables
 
-UI includes:
+Create a `.env` file in the root folder:
 
-Round-by-round collapsible arguments
+```env
+ANTHROPIC_API_KEY=your_claude_api_key
+TAVILY_API_KEY=your_tavily_api_key
+```
 
-On-demand toggles for Pro, Con, Critic
+### 4. Run the Streamlit app
 
-Debate summary button
+```bash
+streamlit run app.py
+```
 
-Debug mode for inspecting state
+---
 
-🧠 Agents
-ProAgent: Defends the claim fiercely, uses facts, logic, and bold rhetoric.
+## 🎥 Walkthrough (Optional)
 
-ConAgent: Refutes the claim with cold analysis, sarcasm, and intellectual takedowns.
+> _Coming soon — 
 
-CriticAgent: Scores both arguments, provides tactical feedback, and declares round winner.
+---
 
-⚙️ Technologies Used
-🔁 LangGraph
+## 🧠 How It Works
 
-🤖 LangChain
+The app uses LangGraph to define a graph of state transitions:
 
-🧠 Anthropic Claude 3.5 Haiku
+- A round begins with **ProAgent** and **ConAgent** running in parallel
+- **CriticAgent** then scores both arguments, gives feedback + strategy
+- A memory step stores round summaries
+- Loop continues until user clicks **End Debate**
+- You can trigger a **final markdown summary** at the end
 
-🌐 TavilySearch
+---
 
-🧪 Streamlit
+## 🤝 Acknowledgements
 
-🧊 Python 3.10+
+- [LangGraph by LangChain](https://www.langchain.com/langgraph)
+- [Anthropic Claude](https://www.anthropic.com)
+- [Tavily Search API](https://www.tavily.com)
+- [Streamlit](https://streamlit.io)
+
+---
 
