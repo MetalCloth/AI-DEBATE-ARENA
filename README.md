@@ -1,6 +1,10 @@
 🗣️ AI Debate Arena
 AI Debate Arena is an advanced multi-agent debate system powered by LangGraph, Anthropic Claude 3.5, and Streamlit. It simulates formal Oxford-style debates between AI agents — ProAgent, ConAgent, and a CriticAgent — with stepwise reasoning, memory, and dynamic strategy refinement.
 
+<img width="2076" height="1099" alt="mermaid-diagram-2025-07-14-222150" src="https://github.com/user-attachments/assets/93d4b0da-f697-4a69-87bb-041b8fbdc3b0" />
+
+
+
 📌 Core Idea: You input a debate topic. The system runs infinite rounds of structured arguments until you hit "End Debate". Every round is judged and critiqued, with arguments updated based on feedback.
 
 🚀 Features
