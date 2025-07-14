@@ -35,15 +35,12 @@ class Debate(TypedDict):
 
 
     critic_feedback: Optional[str]=Field(description='Critic by Critic Agent')
-    past_critic_feedback: Optional[str]=Field(description='Past Critic by Critic Agent')
 
 
     pro_strategy:Optional[str]
     con_strategy:Optional[str]
 
 
-    pro_steps:Optional[str]
-    con_steps:Optional[str]
 
     pro_summary:Optional[str]
     con_summary:Optional[str]
@@ -95,16 +92,17 @@ def web_search_node(query:str) -> str:
 
 
 tools_pro=[direct_pro,web_search_node]
+pro_agent_react_prompt = ChatPromptTemplate.from_template("""
+You are **ProAgent**, a devil’s advocate who must defend the claim with logical reasoning and evidence, ignoring moral or ethical concerns.
 
-prompt = ChatPromptTemplate.from_template("""
-You are **ProAgent** — a fearless, eloquent debater whose mission is to **defend the claim** no matter how absurd, controversial, or fragile it appears.
+Claim: {input}
 
-Use sharp logic, real evidence, and rhetorical brilliance.  
-If a claim seems indefensible — **make it iconic**.
-"ALSO TRY TO READ OPPONENT RESPONSE AND USE THAT TO YOUR ADVANTAGE"
+Opponent Response: {rival_response}
+
+Use sharp logic and evidence. Always produce a strong defense.
+
                                           
-Opponent Response
----{rival_response}
+
 
 🛠️ Tools available:  
 {tools}
@@ -114,6 +112,13 @@ Opponent Response
 - Use **at most 2 tools** to build your case.  
 - Speak like a persuasive human, not an AI.
 
+---
+
+❗️IMPORTANT:
+- After at most 2 tool uses, you MUST finish with:
+Final Answer: <your full, confident defense here>
+- If there is no opponent response, just defend the claim and still finish with:
+Final Answer: <your answer>
 
 ---
 
@@ -139,7 +144,7 @@ Thought: {agent_scratchpad}
 
 
 def pro_argument(state:Debate)->Debate:
-    agent_pro = create_react_agent(model, tools=tools_pro, prompt=prompt)
+    agent_pro = create_react_agent(model, tools=tools_pro, prompt=pro_agent_react_prompt)
 
     executor_pro = AgentExecutor(agent=agent_pro, tools=tools_pro, verbose=True, handle_parsing_errors=True,return_intermediate_steps=False)
 
@@ -147,7 +152,8 @@ def pro_argument(state:Debate)->Debate:
 
     claim=state['claim']
 
-    con_response=state.get('con_summary') or ""
+    con_response = state.get('con_summary') or "No opposition has spoken yet."
+
 
 
 
@@ -156,7 +162,6 @@ def pro_argument(state:Debate)->Debate:
 
    
     state['pro_argument'] = result['output']
-    state['pro_steps'] = result.get('intermediate_steps', [])
     return state
 
    
@@ -196,13 +201,13 @@ def web_search_node_con(query:str) -> str:
 tools_con=[direct_con,web_search_node_con]
 
 
-prompt = ChatPromptTemplate.from_template("""
+con_react_agent_prompt = ChatPromptTemplate.from_template("""
 You are **ConAgent** — a legendary debate warrior known for your cold logic, dry wit, and devastating rebuttals.  
 In formal Oxford-style debates, you dismantle claims so brutally, no one dares defend them again.
 
 Your job: **refute the claim below**, using facts, ridicule, and sharp reasoning.
 
-"ALSO TRY TO READ OPPONENT RESPONSE AND USE THAT TO YOUR ADVANTAGE"
+"ALSO TRY TO READ OPPONENT RESPONSE AND USE THAT TO YOUR ADVANTAGE "
                                           
 Opponent Response
 ---{rival_response}
@@ -239,7 +244,7 @@ Thought: {agent_scratchpad}
 
 
 def con_argument(state:Debate)->Debate:
-    agent_con = create_react_agent(model, tools=tools_con, prompt=prompt)
+    agent_con = create_react_agent(model, tools=tools_con, prompt=con_react_agent_prompt)
 
     executor_pro = AgentExecutor(agent=agent_con, tools=tools_con, verbose=True, handle_parsing_errors=True,return_intermediate_steps=False)
 
@@ -253,7 +258,6 @@ def con_argument(state:Debate)->Debate:
 
 
     state['con_argument'] = result['output']
-    state['con_steps'] = result.get('intermediate_steps', [])
     return state
 
     
@@ -356,7 +360,6 @@ def memory(state):
         'pro_score': state['pro_score'],
         'con_score': state['con_score'],
         'critic_feedback': None,
-        'past_critic_feedback': state['critic_feedback'],
         'pro_strategy': state['pro_strategy'],
         'con_strategy': state['con_strategy'],
         'memory': new_memory,
@@ -415,7 +418,6 @@ sample_state = {
     "pro_score": 0,
     "con_score": 0,
     "critic_feedback": None,
-    "past_critic_feedback": None,
     "pro_strategy": None,
     "con_strategy": None,
     "memory": [],
@@ -448,10 +450,20 @@ with st.sidebar:
     st.write("**Instructions:**")
     st.write(
         "• Enter your debate topic and click **Start Debate**.\n"
-        "• Click **Next Debate Round** to advance.\n"
+    )
+    st.write(
+         "• Click **Next Debate Round** to advance.\n"
+    )
+    st.write(
         "• Click **End the Debate** anytime to finish.\n"
+    )
+    st.write(
         "• Expand rounds to review details.\n"
     )
+    # )     "• Click **Next Debate Round** to advance.\n"
+    #     "• Click **End the Debate** anytime to finish.\n"
+    #     "• Expand rounds to review details.\n"
+    # )
     st.markdown("---")
     st.info("Built with ❤️ using Streamlit", icon="💡")
 
@@ -476,7 +488,6 @@ if not st.session_state.debate_started:
                 "pro_score": 0,
                 "con_score": 0,
                 "critic_feedback": None,
-                "past_critic_feedback": None,
                 'pro_strategy': None,
                 'con_strategy': None,
                 "memory": [],
@@ -595,7 +606,7 @@ for round_data in st.session_state.rounds[::-1]:
                 st.markdown(
                     f"""
                     <div style="background: ; border-radius: 10px; padding: 1rem; border: 2px solid #ffe49c;">
-                        <h4 style="color: #856404;">🧑‍⚖️ Critic</h4>
+                        <h4 style="color: #856404;">🧑‍⚖️ Judgment</h4>
                         <p style="color: ; font-size: 1.08em;">{round_data['critic_feedback']}</p>
                     </div>
                     """, unsafe_allow_html=True
@@ -632,11 +643,11 @@ if st.session_state.finished:
                 f"Winner: {verdict}\n\n"
             )
         # Call your LLM here (example with Claude, replace with your actual call)
-        prompt = ChatPromptTemplate.from_template(
+        summary_bot_prompt = ChatPromptTemplate.from_template(
     "Summarize the following AI debate. For each round, provide a summary of the Pro argument, Con argument, and Critic feedback in a clear markdown table. "
     "At the end, show the final verdict from the Critic and explain in detail why it was chosen. "
-    "Use this format:\n\n"
-    "| Round | Pro Summary | Con Summary | Critic Summary |\n"
+    "Use this format and yeah put critic verdict in (Judgment Summary):\n\n"
+    "| Round | Pro Summary | Con Summary | Judgment Summary |\n"
     "|-------|-------------|-------------|----------------|\n"
     "<Fill one row per round>\n\n"
     "Then write:\n"
@@ -649,7 +660,7 @@ if st.session_state.finished:
         summary_model=ChatAnthropic(model='claude-3-5-haiku-20241022',temperature=0.5)
 
 
-        summary_chain=prompt | summary_model
+        summary_chain=summary_bot_prompt | summary_model
 
         msg=summary_chain.invoke({'transcript':transcript})
 
@@ -669,4 +680,3 @@ with st.expander("🔍 Debug: Current Node Output"):
         st.write("State keys:", list(st.session_state.current_state.keys()))
     else:
         st.write("No current state yet.")
-
