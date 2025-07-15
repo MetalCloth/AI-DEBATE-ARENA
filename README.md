@@ -80,7 +80,7 @@ streamlit run app.py
 
 ---
 
-## 🎥 Walkthrough (Optional)
+## 🎥 Walkthrough 
 
 > _Coming soon — 
 
