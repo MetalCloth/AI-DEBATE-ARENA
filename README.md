@@ -30,7 +30,6 @@ Built with **Claude 3.5 Haiku**, **Tavily Search**, **LangChain**, and a clean *
 ✅ Memory across rounds for smarter arguments  
 ✅ Final markdown-style summary and verdict generation  
 
----
 
 
 ---
