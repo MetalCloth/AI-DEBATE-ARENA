@@ -3,7 +3,7 @@
 > **LangGraph-powered multi-agent debate system featuring Claude, tools, and real-time Streamlit UI.**
 
 <img width="2076" height="1099" alt="mermaid-diagram-2025-07-14-222150" src="https://github.com/user-attachments/assets/93d4b0da-f697-4a69-87bb-041b8fbdc3b0" />
-
+      
 ---
 
 ## 🎯 Overview
@@ -82,7 +82,7 @@ streamlit run app.py
 
 ## 🎥 Walkthrough 
 
-> _Coming soon — 
+https://github.com/user-attachments/assets/bde7679c-fbce-480a-b2f5-dd9d67b939b3
 
 ---
 
@@ -90,7 +90,10 @@ streamlit run app.py
 
 The app uses LangGraph to define a graph of state transitions:
 
-- A round begins with **ProAgent** and **ConAgent** running in parallel
+- A round begins with **ProAgent** a
+
+
+nd **ConAgent** running in parallel
 - **CriticAgent** then scores both arguments, gives feedback + strategy
 - A memory step stores round summaries
 - Loop continues until user clicks **End Debate**
