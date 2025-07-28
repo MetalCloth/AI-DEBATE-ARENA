@@ -104,7 +104,7 @@ Use sharp logic and evidence. Always produce a strong defense.
                                           
 
 
-🛠️ Tools available:  
+Tools available:  
 {tools}
 
 Rules of Engagement:  
@@ -421,7 +421,7 @@ sample_state = {
     "pro_strategy": None,
     "con_strategy": None,
     "memory": [],
-    "loop_counter": 999999,  # NOT used to stop; just placeholder
+    "loop_counter": 999999,  
     "verdict": None
 }
 
@@ -460,10 +460,7 @@ with st.sidebar:
     st.write(
         "• Expand rounds to review details.\n"
     )
-    # )     "• Click **Next Debate Round** to advance.\n"
-    #     "• Click **End the Debate** anytime to finish.\n"
-    #     "• Expand rounds to review details.\n"
-    # )
+   
     st.markdown("---")
     st.info("Built with ❤️ using Streamlit", icon="💡")
 
@@ -491,7 +488,7 @@ if not st.session_state.debate_started:
                 'pro_strategy': None,
                 'con_strategy': None,
                 "memory": [],
-                "loop_counter": 999999,  # Infinite
+                "loop_counter": 999999,
                 "verdict": None
             }
             if 'graph' in st.session_state:
@@ -553,7 +550,7 @@ with col_center:
             if st.button("🛑 End the Debate", use_container_width=True):
                 st.session_state.finished = True
     else:
-        st.success("✅ Debate complete. Thanks for following the AI debate!")
+        st.success(" Debate complete. Thanks for following the AI debate!")
         
 
 st.markdown("---")
@@ -664,7 +661,6 @@ if st.session_state.finished:
 
         msg=summary_chain.invoke({'transcript':transcript})
 
-        # st.write(transcript)
 
         st.session_state.debate_summary  = msg.content if hasattr(msg.content[0], "text") else str(msg.content)
 
