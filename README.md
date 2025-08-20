@@ -2,7 +2,7 @@
 
 > **LangGraph-powered multi-agent debate system featuring Claude, tools, and real-time Streamlit UI.**
 
-<img width="2076" height="1099" alt="mermaid-diagram-2025-07-14-222150" src="https://github.com/user-attachments/assets/93d4b0da-f697-4a69-87bb-041b8fbdc3b0" />
+<img width="2076" height="1099" alt="mermaid-diagram-2025-07-14-222150" src="https://github.com/user-attachments/assets/5566a767-6b0d-4401-b353-c307aaf5a374" />
       
 ---
 
@@ -108,4 +108,5 @@ nd **ConAgent** running in parallel
 - [Streamlit](https://streamlit.io)
 
 ---
+
 
