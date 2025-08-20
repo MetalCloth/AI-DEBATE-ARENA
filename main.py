@@ -35,6 +35,7 @@ class Debate(TypedDict):
     memory: list[str]
     loop_counter: int
     verdict: Optional[str] = Field(description='''The final Verdict of us the human ('Pro','Con','NOTA)''')
+    round:int
 
 @tool
 def web_search(query: str) -> str:
@@ -63,6 +64,8 @@ You are **ProAgent**, a sharp and persuasive debater defending a claim. Adopt a 
 **Rules:**
 - Your response must be under 200 words.
 - Be persuasive, clear, and direct.
+- Generate in beautifuly looking format
+                                                          
 
 **Output Format (Strict):**
 {agent_scratchpad}
@@ -111,7 +114,7 @@ You are **ConAgent**, a legendary debater known for your cold logic and devastat
 **Rules:**
 - Your response must be under 200 words.
 - Be ruthless, precise, and logical.
-
+- Generate in beautifuly looking format
 **Output Format (Strict):**
 {agent_scratchpad}
 Thought: I will pinpoint the biggest weakness in my opponent's previous statement. My rebuttal must begin by directly addressing that weakness to neutralize their argument. Then I will present my counter-point.
@@ -149,6 +152,7 @@ class Critic(BaseModel):
     con_score: int
     pro_strategy: Optional[str]
     con_strategy: Optional[str]
+    round:int
 
 parser = PydanticOutputParser(pydantic_object=Critic)
 
@@ -178,6 +182,8 @@ def critic_argument(state: Debate) -> Debate:
     pro_argument_val = state['pro_argument']
     con_argument_val = state['con_argument']
 
+    round=state.get('round',0)
+
     parsed_critic = critic_chain.invoke({'claim': claim, 'pro_argument': pro_argument_val, 'con_argument': con_argument_val})
     
     pro_summary_msg = summary_chain.invoke({'details': pro_argument_val})
@@ -192,6 +198,7 @@ def critic_argument(state: Debate) -> Debate:
     state['con_summary'] = con_summary_msg.content
     state['verdict'] = parsed_critic.winner
     state['loop_counter'] = state['loop_counter'] - 1
+    state['round']=round+1
     return state
 
 # --- GRAPH ---
@@ -199,6 +206,19 @@ def should_continue(state: Debate) -> str:
     if state['loop_counter'] <= 0:
         return 'end'
     return 'continue'
+
+
+def round(state: Debate)->str:
+    round=state.get('round',0)
+    if round%2==0:
+        return 'pro_agent'
+    
+    return 'con_agent'
+
+def round_entry_node(state: Debate) -> dict:
+    """This is the NODE function. It must return a dictionary."""
+    return {}
+
 
 graph = StateGraph(Debate)
 
@@ -208,14 +228,29 @@ graph = StateGraph(Debate)
 graph.add_node('pro_agent', pro_argument)
 graph.add_node('con_agent', con_argument)
 graph.add_node('critic', critic_argument)
+graph.add_node('round_router', round_entry_node)
+
+
+graph.set_entry_point('round_router')
+
+graph.add_conditional_edges('round_router',round,{'pro_agent':'pro_agent','con_agent':'con_agent'})
+
 
 # MODIFICATION: Define the sequential workflow.
-graph.set_entry_point('pro_agent')
-graph.add_edge('pro_agent', 'con_agent')
-graph.add_edge('con_agent', 'critic')
-graph.add_conditional_edges('critic', should_continue, {'continue': 'pro_agent', 'end': END})
+# graph.set_entry_point('pro_agent')
+graph.add_conditional_edges('pro_agent',round,{'pro_agent':'con_agent','con_agent':'critic'})
+graph.add_conditional_edges('con_agent',round,{'pro_agent':'critic','con_agent':'pro_agent'})
+
+
+
+
+
+# graph.add_conditional_edges('round',round,{'pro_agent':'pro_agent','con_agent':'con_agent'})
+graph.add_conditional_edges('critic', should_continue, {'continue': 'round_router', 'end': END})
 
 app = graph.compile()
+
+
 
 
 # --- STREAMLIT UI (with minor correction) ---
@@ -256,7 +291,8 @@ if not st.session_state.start:
                 "con_score": 0,
                 "memory": [],
                 "loop_counter": 999, 
-                "verdict": None
+                "verdict": None,
+                "round":0
             }
             if 'graph' in st.session_state:
                 del st.session_state.graph
@@ -326,26 +362,44 @@ st.markdown("---")
 for round_data in st.session_state.rounds[::-1]:
     round_num = round_data['round_num']
     with st.expander(f"🔁 Debate Round #{round_num} - Winner: {round_data.get('verdict', 'TBD')}", expanded=True):
-        st.markdown(f"""
-            <div style="border: 2px solid #b7dfb0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
-                <h4 style="color: #155724;">🟢 Pro Agent</h4>
-                <p>{round_data['pro_argument']}</p>
-                <p><b>Score:</b> {round_data.get('pro_score', 'N/A')}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        st.markdown(f"""
-            <div style="border: 2px solid #f5b7b1; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
-                <h4 style="color: #721c24;">🔴 Con Agent</h4>
-                <p>{round_data['con_argument']}</p>
-                <p><b>Score:</b> {round_data.get('con_score', 'N/A')}</p>
-            </div>
-            """, unsafe_allow_html=True)
+        if round_num%2!=0:
+            st.markdown(f"""
+                <div style="border: 2px solid #b7dfb0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                    <h4 style="color: #155724;">🟢 Pro Agent</h4>
+                    <p>{round_data['pro_argument']}</p>
+                    <p><b>Score:</b> {round_data.get('pro_score', 'N/A')}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            st.markdown(f"""
+                <div style="border: 2px solid #f5b7b1; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                    <h4 style="color: #721c24;">🔴 Con Agent</h4>
+                    <p>{round_data['con_argument']}</p>
+                    <p><b>Score:</b> {round_data.get('con_score', 'N/A')}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+                <div style="border: 2px solid #f5b7b1; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                    <h4 style="color: #721c24;">🔴 Con Agent</h4>
+                    <p>{round_data['con_argument']}</p>
+                    <p><b>Score:</b> {round_data.get('con_score', 'N/A')}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            st.markdown(f"""
+                <div style="border: 2px solid #b7dfb0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                    <h4 style="color: #155724;">🟢 Pro Agent</h4>
+                    <p>{round_data['pro_argument']}</p>
+                    <p><b>Score:</b> {round_data.get('pro_score', 'N/A')}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
         st.markdown(f"""
             <div style="border: 2px solid #ffe49c; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
                 <h4 style="color: #856404;">🧑‍⚖️ Judgment</h4>
                 <p>{round_data['critic_feedback']}</p>
             </div>
             """, unsafe_allow_html=True)
+        
 
 if st.session_state.finished:
     if "debate_summary" not in st.session_state:
