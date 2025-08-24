@@ -89,10 +89,7 @@ https://github.com/user-attachments/assets/bde7679c-fbce-480a-b2f5-dd9d67b939b3
 
 The app uses LangGraph to define a graph of state transitions:
 
-- A round begins with **ProAgent** a
-
-
-nd **ConAgent** running in parallel
+- A round begins with **ProAgent** and **ConAgent** running in parallel
 - **CriticAgent** then scores both arguments, gives feedback + strategy
 - A memory step stores round summaries
 - Loop continues until user clicks **End Debate**
@@ -108,5 +105,6 @@ nd **ConAgent** running in parallel
 - [Streamlit](https://streamlit.io)
 
 ---
+
 
 
