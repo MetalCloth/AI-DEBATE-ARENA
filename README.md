@@ -2,7 +2,7 @@
 
 > **LangGraph-powered multi-agent debate system featuring Claude, tools, and real-time Streamlit UI.**
 
-<img width="2076" height="1099" alt="mermaid-diagram-2025-07-14-222150" src="https://github.com/user-attachments/assets/5566a767-6b0d-4401-b353-c307aaf5a374" />
+<img width="2076" height="1099" alt="mermaid-diagram-2025-07-14-222150" src="https://github.com/user-attachments/assets/ae1722fb-2075-41ee-be6c-001ce7c2a794" />
       
 ---
 
