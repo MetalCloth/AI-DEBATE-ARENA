@@ -74,6 +74,29 @@ Action: The tool to use, chosen from [{tool_names}].
 Final Answer: [Your full argument, starting with the rebuttal]
 """)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def pro_argument(state: Debate) -> dict:
     agent_pro = create_react_agent(model, tools=tools, prompt=pro_agent_react_prompt)
     executor_pro = AgentExecutor(
@@ -134,7 +157,6 @@ def con_argument(state: Debate) -> dict:
     )
     con_strategy = state.get('con_strategy') or ""
     claim = state['claim']
-    # MODIFICATION: Use the Pro agent's *current* argument, not the summary of the last one.
     pro_response = state.get('pro_argument') or ""
 
     result = executor_con.invoke({
@@ -222,8 +244,6 @@ def round_entry_node(state: Debate) -> dict:
 
 graph = StateGraph(Debate)
 
-# MODIFICATION: Removed the parallel execution block.
-# We will now add nodes sequentially.
 
 graph.add_node('pro_agent', pro_argument)
 graph.add_node('con_agent', con_argument)
@@ -236,8 +256,6 @@ graph.set_entry_point('round_router')
 graph.add_conditional_edges('round_router',round,{'pro_agent':'pro_agent','con_agent':'con_agent'})
 
 
-# MODIFICATION: Define the sequential workflow.
-# graph.set_entry_point('pro_agent')
 graph.add_conditional_edges('pro_agent',round,{'pro_agent':'con_agent','con_agent':'critic'})
 graph.add_conditional_edges('con_agent',round,{'pro_agent':'critic','con_agent':'pro_agent'})
 
@@ -245,7 +263,6 @@ graph.add_conditional_edges('con_agent',round,{'pro_agent':'critic','con_agent':
 
 
 
-# graph.add_conditional_edges('round',round,{'pro_agent':'pro_agent','con_agent':'con_agent'})
 graph.add_conditional_edges('critic', should_continue, {'continue': 'round_router', 'end': END})
 
 app = graph.compile()
@@ -253,7 +270,7 @@ app = graph.compile()
 
 
 
-# --- STREAMLIT UI (with minor correction) ---
+# --- STREAMLIT UI---
 st.set_page_config(
     page_title="AI Debate Arena",
     page_icon="🗣️",
@@ -264,7 +281,6 @@ st.set_page_config(
 with st.sidebar:
     st.image("https://img.icons8.com/color/96/ai.png", width=80)
     st.title("AI Debate Arena")
-    st.caption("Interactive, stepwise debate powered by LangGraph & Claude.")
     st.markdown("---")
     st.write("**Instructions:**")
     st.write("• Enter your debate topic and click **Start Debate**.")
@@ -281,12 +297,13 @@ if 'start' not in st.session_state:
 if not st.session_state.start:
     with st.form("debate_setup"):
         topic = st.text_input("Enter your debate topic:", value="Dictatorship should never exist")
+        
         submitted = st.form_submit_button("Start Debate")
-        if submitted and topic.strip():
-            st.session_state.topic = topic.strip()
+        if submitted and topic:
+            st.session_state.topic = topic
             st.session_state.start = True
             st.session_state.sample_state = {
-                "claim": topic.strip(),
+                "claim": topic,
                 "pro_score": 0,
                 "con_score": 0,
                 "memory": [],
@@ -362,43 +379,48 @@ st.markdown("---")
 for round_data in st.session_state.rounds[::-1]:
     round_num = round_data['round_num']
     with st.expander(f"🔁 Debate Round #{round_num} - Winner: {round_data.get('verdict', 'TBD')}", expanded=True):
+        col1,col2,col3=st.columns(3)
         if round_num%2!=0:
-            st.markdown(f"""
-                <div style="border: 2px solid #b7dfb0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
-                    <h4 style="color: #155724;">🟢 Pro Agent</h4>
-                    <p>{round_data['pro_argument']}</p>
-                    <p><b>Score:</b> {round_data.get('pro_score', 'N/A')}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            st.markdown(f"""
-                <div style="border: 2px solid #f5b7b1; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
-                    <h4 style="color: #721c24;">🔴 Con Agent</h4>
-                    <p>{round_data['con_argument']}</p>
-                    <p><b>Score:</b> {round_data.get('con_score', 'N/A')}</p>
-                </div>
-                """, unsafe_allow_html=True)
+            with col1:
+                st.markdown(f"""
+                    <div style="border: 2px solid #b7dfb0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                        <h4 style="color: #155724;">🟢 Pro Agent</h4>
+                        <p>{round_data['pro_argument']}</p>
+                        <p><b>Score:</b> {round_data.get('pro_score', 'N/A')}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"""
+                    <div style="border: 2px solid #f5b7b1; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                        <h4 style="color: #721c24;">🔴 Con Agent</h4>
+                        <p>{round_data['con_argument']}</p>
+                        <p><b>Score:</b> {round_data.get('con_score', 'N/A')}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
         else:
+            with col1:
+                st.markdown(f"""
+                    <div style="border: 2px solid #f5b7b1; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                        <h4 style="color: #721c24;">🔴 Con Agent</h4>
+                        <p>{round_data['con_argument']}</p>
+                        <p><b>Score:</b> {round_data.get('con_score', 'N/A')}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"""
+                    <div style="border: 2px solid #b7dfb0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                        <h4 style="color: #155724;">🟢 Pro Agent</h4>
+                        <p>{round_data['pro_argument']}</p>
+                        <p><b>Score:</b> {round_data.get('pro_score', 'N/A')}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+        with col3:
             st.markdown(f"""
-                <div style="border: 2px solid #f5b7b1; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
-                    <h4 style="color: #721c24;">🔴 Con Agent</h4>
-                    <p>{round_data['con_argument']}</p>
-                    <p><b>Score:</b> {round_data.get('con_score', 'N/A')}</p>
+                <div style="border: 2px solid #ffe49c; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                    <h4 style="color: #856404;">🧑‍⚖️ Judgment</h4>
+                    <p>{round_data['critic_feedback']}</p>
                 </div>
                 """, unsafe_allow_html=True)
-            st.markdown(f"""
-                <div style="border: 2px solid #b7dfb0; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
-                    <h4 style="color: #155724;">🟢 Pro Agent</h4>
-                    <p>{round_data['pro_argument']}</p>
-                    <p><b>Score:</b> {round_data.get('pro_score', 'N/A')}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-        st.markdown(f"""
-            <div style="border: 2px solid #ffe49c; border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
-                <h4 style="color: #856404;">🧑‍⚖️ Judgment</h4>
-                <p>{round_data['critic_feedback']}</p>
-            </div>
-            """, unsafe_allow_html=True)
         
 
 if st.session_state.finished:
@@ -437,7 +459,7 @@ if st.session_state.finished:
     # Display the summary if it exists
     if st.session_state.debate_summary:
         st.markdown("---")
-        st.markdown("### 📜 Debate Summary")
+        st.markdown("###  Debate Summary")
         st.markdown(st.session_state.debate_summary)
 
 
